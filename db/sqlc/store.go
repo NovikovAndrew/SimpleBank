@@ -48,7 +48,7 @@ type TransferTxParams struct {
 // TransferTxResult is the result of the transfer transaction
 type TransferTxResult struct {
 	Transfer    Transfer `json:"transfer"`
-	FromAccount Account  `json:"from_account"`
+	FromAccount Account  `json:"from_account" `
 	ToAccount   Account  `json:"to_account"`
 	FromEntry   Entry    `json:"from_entry"`
 	ToEntry     Entry    `json:"to_entry"`
@@ -88,7 +88,35 @@ func (store *Store) TransferTx(ctx context.Context, args TransferTxParams) (Tran
 			return err
 		}
 
-		// TODO: update account balance
+		// get account -> update account balance
+		account1, err := q.GetAccountForUpdate(ctx, args.FromAccountID)
+		if err != nil {
+			return err
+		}
+
+		result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      args.FromAccountID,
+			Balance: account1.Balance - args.Amount,
+		})
+
+		if err != nil {
+			return err
+		}
+
+		account2, err := q.GetAccountForUpdate(ctx, args.ToAccountID)
+
+		if err != nil {
+			return err
+		}
+
+		result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      args.ToAccountID,
+			Balance: account2.Balance + args.Amount,
+		})
+
+		if err != nil {
+			return err
+		}
 
 		return nil
 	})
