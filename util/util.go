@@ -34,7 +34,7 @@ func RandomOwner() string {
 	return GenerateRandonString(6)
 }
 
-func GenerateRandomMoney() int64 {
+func RandomMoney() int64 {
 	return RandomInt(0, 1000)
 }
 
